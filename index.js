@@ -99,7 +99,7 @@ function update() {
   velocityY += gravity;
   doodler.y += velocityY;
   if (doodler.y <= 0) {
-    // console.log("out of frame"); // Doodler is out of the top frame
+    console.log("out of frame"); // Doodler is out of the top frame
     doodler.y = 0; // Adjusting the doodler's position to the top of the frame
     // Adjust the canvas accordingly
     for (let i = 0; i < platformArray.length; i++) {

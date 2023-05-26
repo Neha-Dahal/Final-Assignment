@@ -35,7 +35,7 @@ let score = 0;
 //gameover
 let gameOver = false;
 
-const doodler = {
+let doodler = {
   img: null,
   x: doodlerX,
   y: doodlerY,
@@ -98,6 +98,17 @@ function update() {
   }
   velocityY += gravity;
   doodler.y += velocityY;
+  if (doodler.y <= 0) {
+    // console.log("out of frame"); // Doodler is out of the top frame
+    doodler.y = 0; // Adjusting the doodler's position to the top of the frame
+    // Adjust the canvas accordingly
+    for (let i = 0; i < platformArray.length; i++) {
+      platformArray[i].y -= velocityY; // Shifting all platforms up
+    }
+  }
+  if (doodler.y > canvas.height) {
+    gameOver = true;
+  }
 
   ctx.drawImage(
     doodler.img,
@@ -107,6 +118,15 @@ function update() {
     doodler.height
   );
   drawScore();
+  if (gameOver) {
+    ctx.fillText(
+      "Game Over: Press 'Space' to restart",
+      canvasWidth / 7,
+      (canvasHeight * 7) / 8
+    );
+    ctx.font = "10px Arial";
+  }
+
   //platform
   for (let i = 0; i < platformArray.length; i++) {
     let platform = platformArray[i];
@@ -143,7 +163,7 @@ function moveDoodler(e) {
     //move left
     velocityX = -3;
     doodler.img = doodlerLeftImg;
-  } else if (e.code == "Space" || e.code == "Spacebar") {
+  } else if ((e.code == "Space" || e.code == "Spacebar") && !gameOver) {
     doodler.img = doodlerUpImg;
     isShooting = true;
 
@@ -151,6 +171,21 @@ function moveDoodler(e) {
       doodler.img = doodlerRightImg;
       isShooting = false;
     }, 300);
+  } else if ((e.code == "Space" || e.code == "Spacebar") && gameOver) {
+    //reset the game
+    doodler = {
+      img: doodlerRightImg,
+      x: doodlerX,
+      y: doodlerY,
+      width: doodlerWidth,
+      height: doodlerHeight,
+    };
+    velocityX = 0;
+    velocityY = initialVelocityY;
+    score = 0;
+    maxScore = 0;
+    gameOver = false;
+    placePlatforms();
   }
 }
 
@@ -258,6 +293,6 @@ function drawScore() {
   }
 
   ctx.fillStyle = "black";
-  ctx.font = "24px Arial";
+  ctx.font = "16px Arial";
   ctx.fillText("Score: " + score, 10, 30);
 }

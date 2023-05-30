@@ -32,6 +32,16 @@ let platformsOnScreen = 10;
 let maxScore = 0;
 let score = 0;
 
+// obstacle
+let obstacleImg;
+let obstacleX;
+let obstacleY;
+let obstacleHeight = 40;
+let obstacleWidth = 46;
+let canCreateObstacle = true;
+let platformWithObstacleIndex = -1;
+let obstacleRemoved = false;
+
 //gameover
 let gameOver = false;
 
@@ -43,6 +53,24 @@ let doodler = {
   height: doodlerHeight,
 };
 
+let obstacle = {
+  img: obstacleImg,
+  width: obstacleWidth,
+  height: obstacleHeight,
+  x: obstacleX,
+  y: obstacleY,
+};
+
+let platform = {
+  img: platformImg,
+  x: canvasWidth / 2,
+  y: canvasHeight - 50,
+  width: platformWidth,
+  height: platformHeight,
+  passed: false,
+  touched: false,
+};
+
 window.onload = function () {
   canvas = document.getElementById("canvas");
   canvas.width = canvasWidth;
@@ -50,9 +78,6 @@ window.onload = function () {
   ctx = canvas.getContext("2d");
 
   //draw the doodler
-  //   ctx.fillStyle = "green";
-  //   ctx.fillRect(doodler.x, doodler.y, doodler.width, doodler.height);
-
   //loading the images
 
   doodlerRightImg = new Image();
@@ -76,6 +101,9 @@ window.onload = function () {
   platformImg = new Image();
   platformImg.src = "./images/platform.png";
 
+  obstacleImg = new Image();
+  obstacleImg.src = "./images/obstacle.png";
+
   velocityY = initialVelocityY;
   placePlatforms();
   requestAnimationFrame(update);
@@ -89,43 +117,19 @@ function update() {
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  //doodler
-  doodler.x += velocityX;
-  if (doodler.x > canvasWidth) {
-    doodler.x = 0;
-  } else if (doodler.x + doodler.width < 0) {
-    doodler.x = canvasWidth;
-  }
-  velocityY += gravity;
-  doodler.y += velocityY;
+  drawScore();
+  //obstacle
 
-  if (doodler.y <= canvas.height / 2) {
-    doodler.y = canvas.height / 2; // Adjusting the doodler's position to the center of the frame
-    // Adjust the canvas accordingly
-    
-    for (let i = 0; i < platformArray.length; i++) {
-      platformArray[i].y -= velocityY; // Shifting all platforms up
-    }
-  }
-  if (doodler.y > canvas.height) {
+  setInterval(createObstacle(platform), 3000);
+  if (!obstacleRemoved && detectCollision(doodler, obstacle)) {
+    console.log("collided with obs");
     gameOver = true;
   }
-
-  ctx.drawImage(
-    doodler.img,
-    doodler.x,
-    doodler.y,
-    doodler.width,
-    doodler.height
-  );
-  drawScore();
-  if (gameOver) {
-    ctx.fillText(
-      "Game Over: Press 'Space' to restart",
-      canvasWidth / 7,
-      (canvasHeight * 7) / 8
-    );
-    ctx.font = "10px Arial";
+  if (obstacle.y + obstacle.height >= canvasHeight) {
+    //clear the image here
+    console.log(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    ctx.clearRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    obstacleRemoved = true;
   }
 
   //platform
@@ -152,7 +156,68 @@ function update() {
     platformArray.shift();
     newPlatform();
   }
+  //doodler
+  doodler.x += velocityX;
+  if (doodler.x > canvasWidth) {
+    doodler.x = 0;
+  } else if (doodler.x + doodler.width < 0) {
+    doodler.x = canvasWidth;
+  }
+  velocityY += gravity;
+  doodler.y += velocityY;
+
+  if (doodler.y <= canvas.height / 2) {
+    doodler.y = canvas.height / 2; // Adjusting the doodler's position to the center of the frame
+    // Adjust the canvas accordingly
+
+    for (let i = 0; i < platformArray.length; i++) {
+      platformArray[i].y -= velocityY; // Shifting all platforms up
+    }
+  }
+  if (doodler.y > canvas.height) {
+    gameOver = true;
+  }
+
+  ctx.drawImage(
+    doodler.img,
+    doodler.x,
+    doodler.y,
+    doodler.width,
+    doodler.height
+  );
   drawScore();
+  if (gameOver) {
+    ctx.fillText(
+      "Game Over: Press 'Space' to restart",
+      canvasWidth / 7,
+      (canvasHeight * 7) / 8
+    );
+    ctx.font = "10px Arial";
+  }
+}
+function createObstacle(platform) {
+  if (canCreateObstacle) {
+    console.log("inside create obs");
+    obstacleX = platform.x;
+    obstacleY = platform.y - 2 * platformHeight;
+
+    obstacle = {
+      img: obstacleImg,
+      width: obstacleWidth,
+      height: obstacleHeight,
+      x: obstacleX,
+      y: obstacleY,
+    };
+
+    ctx.drawImage(
+      obstacle.img,
+      obstacle.x,
+      obstacle.y,
+      obstacle.width,
+      obstacle.height
+    );
+    platformWithObstacleIndex = platformArray.indexOf(platform);
+  }
 }
 
 function moveDoodler(e) {
@@ -192,9 +257,8 @@ function moveDoodler(e) {
 
 function placePlatforms() {
   platformArray = [];
-
   //starting platforms
-  let platform = {
+  platform = {
     img: platformImg,
     x: canvasWidth / 2,
     y: canvasHeight - 50,
@@ -202,6 +266,7 @@ function placePlatforms() {
     height: platformHeight,
     passed: false,
     touched: false,
+    obstacle: null,
   };
   platformArray.push(platform);
 
@@ -213,8 +278,7 @@ function placePlatforms() {
       y: canvasHeight - 75 * i - 150,
       width: platformWidth,
       height: platformHeight,
-      // passed: false,
-      // touched: false,
+      obstacle: null,
     };
     let overlapping = false;
     for (let j = 0; j < platformArray.length; j++) {
@@ -245,6 +309,7 @@ function newPlatform() {
     height: platformHeight,
     passed: false,
     touched: false,
+    obstacle: null,
   };
   let overlapping = false;
   for (let j = 0; j < platformArray.length; j++) {
@@ -258,6 +323,9 @@ function newPlatform() {
     }
   }
   if (!overlapping) {
+    if (platformWithObstacleIndex == -1) {
+      createObstacle(platform);
+    }
     platformArray.push(platform);
   } else {
     return;

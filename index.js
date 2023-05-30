@@ -27,20 +27,12 @@ let platformWidth = 60;
 let platformHeight = 18;
 let platformImg;
 let platformsOnScreen = 10;
+let movingPlatformImg;
+let obstaclePlatformImg;
 
 //score
 let maxScore = 0;
 let score = 0;
-
-// obstacle
-let obstacleImg;
-let obstacleX;
-let obstacleY;
-let obstacleHeight = 40;
-let obstacleWidth = 46;
-let canCreateObstacle = true;
-let platformWithObstacleIndex = -1;
-let obstacleRemoved = false;
 
 //gameover
 let gameOver = false;
@@ -53,14 +45,6 @@ let doodler = {
   height: doodlerHeight,
 };
 
-let obstacle = {
-  img: obstacleImg,
-  width: obstacleWidth,
-  height: obstacleHeight,
-  x: obstacleX,
-  y: obstacleY,
-};
-
 let platform = {
   img: platformImg,
   x: canvasWidth / 2,
@@ -69,6 +53,7 @@ let platform = {
   height: platformHeight,
   passed: false,
   touched: false,
+  type: "default",
 };
 
 window.onload = function () {
@@ -77,7 +62,6 @@ window.onload = function () {
   canvas.height = canvasHeight;
   ctx = canvas.getContext("2d");
 
-  //draw the doodler
   //loading the images
 
   doodlerRightImg = new Image();
@@ -101,8 +85,11 @@ window.onload = function () {
   platformImg = new Image();
   platformImg.src = "./images/platform.png";
 
-  obstacleImg = new Image();
-  obstacleImg.src = "./images/obstacle.png";
+  obstaclePlatformImg = new Image();
+  obstaclePlatformImg.src = "./images/obstaclePlatform.png";
+
+  movingPlatformImg = new Image();
+  movingPlatformImg.src = "./images/movingPlatform.png";
 
   velocityY = initialVelocityY;
   placePlatforms();
@@ -117,21 +104,7 @@ function update() {
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawScore();
-  //obstacle
-
-  setInterval(createObstacle(platform), 3000);
-  if (!obstacleRemoved && detectCollision(doodler, obstacle)) {
-    console.log("collided with obs");
-    gameOver = true;
-  }
-  if (obstacle.y + obstacle.height >= canvasHeight) {
-    //clear the image here
-    console.log(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    ctx.clearRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    obstacleRemoved = true;
-  }
-
+  // drawScore();
   //platform
   for (let i = 0; i < platformArray.length; i++) {
     let platform = platformArray[i];
@@ -139,6 +112,15 @@ function update() {
     if (velocityY < 0 && doodler.y < (canvasHeight * 6) / 7) {
       platform.y -= initialVelocityY;
     }
+    if (detectCollision(doodler, platform)) {
+      if (platform.type == "obstacle") {
+        console.log("collided with obs platform");
+        gameOver = true;
+      } else if (platform.type == "moving") {
+        console.log("collided with moving");
+      }
+    }
+
     if (detectCollision(doodler, platform) && velocityY >= 0) {
       velocityY = initialVelocityY;
       // score += 10;
@@ -195,30 +177,6 @@ function update() {
     ctx.font = "10px Arial";
   }
 }
-function createObstacle(platform) {
-  if (canCreateObstacle) {
-    console.log("inside create obs");
-    obstacleX = platform.x;
-    obstacleY = platform.y - 2 * platformHeight;
-
-    obstacle = {
-      img: obstacleImg,
-      width: obstacleWidth,
-      height: obstacleHeight,
-      x: obstacleX,
-      y: obstacleY,
-    };
-
-    ctx.drawImage(
-      obstacle.img,
-      obstacle.x,
-      obstacle.y,
-      obstacle.width,
-      obstacle.height
-    );
-    platformWithObstacleIndex = platformArray.indexOf(platform);
-  }
-}
 
 function moveDoodler(e) {
   if (e.code == "ArrowRight" || e.code == "KeyD") {
@@ -254,62 +212,16 @@ function moveDoodler(e) {
     placePlatforms();
   }
 }
-
-function placePlatforms() {
-  platformArray = [];
-  //starting platforms
-  platform = {
-    img: platformImg,
-    x: canvasWidth / 2,
-    y: canvasHeight - 50,
-    width: platformWidth,
-    height: platformHeight,
-    passed: false,
-    touched: false,
-    obstacle: null,
-  };
-  platformArray.push(platform);
-
-  for (let i = 0; i < platformsOnScreen; i++) {
-    let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
-    platform = {
-      img: platformImg,
-      x: randomX,
-      y: canvasHeight - 75 * i - 150,
-      width: platformWidth,
-      height: platformHeight,
-      obstacle: null,
-    };
-    let overlapping = false;
-    for (let j = 0; j < platformArray.length; j++) {
-      let existingPlatform = platformArray[j];
-      if (
-        Math.abs(platform.x - existingPlatform.x) < platformWidth &&
-        Math.abs(platform.y - existingPlatform.y) < platformHeight
-      ) {
-        overlapping = true;
-        break;
-      }
-    }
-    if (!overlapping) {
-      platformArray.push(platform);
-    } else {
-      i--; // Retry with a new platform position
-    }
-  }
-}
-
-function newPlatform() {
-  let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
+function createPlatform(platformHeight, img, x, y, type) {
   let platform = {
-    img: platformImg,
-    x: randomX,
-    y: -platformHeight,
+    img: img,
+    x: x,
+    y: y,
     width: platformWidth,
     height: platformHeight,
     passed: false,
     touched: false,
-    obstacle: null,
+    type: type,
   };
   let overlapping = false;
   for (let j = 0; j < platformArray.length; j++) {
@@ -323,14 +235,62 @@ function newPlatform() {
     }
   }
   if (!overlapping) {
-    if (platformWithObstacleIndex == -1) {
-      createObstacle(platform);
-    }
     platformArray.push(platform);
-  } else {
-    return;
   }
-  // platformArray.push(platform);
+}
+// platformArray.push(platform);
+
+function createMovingPlatform() {
+  let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
+  let randomY = 0;
+  // let img = movingPlatformImg;
+  createPlatform(platformHeight, movingPlatformImg, randomX, randomY, "moving");
+}
+
+function createObstaclePlatform() {
+  let randomX = Math.random() * canvasWidth;
+  let randomY = 0;
+  let platformHeight = 45;
+  console.log("inside create obs platform");
+  // let image = obstaclePlatformImg;
+  createPlatform(
+    platformHeight,
+    obstaclePlatformImg,
+    randomX,
+    randomY,
+    "obstacle"
+  );
+}
+function placePlatforms() {
+  platformArray = [];
+
+  createPlatform(
+    platformHeight,
+    platformImg,
+    canvasWidth / 2,
+    canvasHeight - 50,
+    "default"
+  );
+  for (let i = 0; i < platformsOnScreen - 1; i++) {
+    let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
+    let randomY = canvasHeight - 75 * i - 150;
+
+    createPlatform(platformHeight, platformImg, randomX, randomY, "default");
+  }
+}
+function newPlatform() {
+  let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
+  let randomY = -platformHeight;
+
+  let randomType = Math.random();
+
+  if (randomType < 0.2) {
+    createMovingPlatform();
+  } else if (randomType < 0.3) {
+    createObstaclePlatform();
+  } else {
+    createPlatform(platformHeight, platformImg, randomX, randomY, "default");
+  }
 }
 
 function detectCollision(a, b) {

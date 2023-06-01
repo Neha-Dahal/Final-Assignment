@@ -29,6 +29,7 @@ let platformImg;
 let platformsOnScreen = 10;
 let movingPlatformImg;
 let obstaclePlatformImg;
+let velX = 0;
 
 //score
 let maxScore = 0;
@@ -54,6 +55,7 @@ let platform = {
   passed: false,
   touched: false,
   type: "default",
+  velX: velX,
 };
 
 window.onload = function () {
@@ -120,6 +122,13 @@ function update() {
         console.log("collided with moving");
       }
     }
+    if (platform.type == "moving") {
+      platform.x += platform.velX; // Update platform position based on velocity
+      // Reverse the direction if the platform reaches the canvas boundaries
+      if (platform.x <= 0 || platform.x + platform.width >= canvasWidth) {
+        platform.velX *= -1;
+      }
+    }
 
     if (detectCollision(doodler, platform) && velocityY >= 0) {
       velocityY = initialVelocityY;
@@ -167,7 +176,15 @@ function update() {
     doodler.width,
     doodler.height
   );
+
   drawScore();
+  if (score % 1000 == 0) {
+    let i = 0.001;
+    initialVelocityY -= i;
+    // console.log(initialVelocityY);
+    gravity += i * 0.5;
+    // console.log(gravity);
+  }
   if (gameOver) {
     ctx.fillText(
       "Game Over: Press 'Space' to restart",
@@ -181,11 +198,11 @@ function update() {
 function moveDoodler(e) {
   if (e.code == "ArrowRight" || e.code == "KeyD") {
     //move right
-    velocityX = 3;
+    velocityX = 2;
     doodler.img = doodlerRightImg;
   } else if (e.code == "ArrowLeft" || e.code == "KeyA") {
     //move left
-    velocityX = -3;
+    velocityX = -2;
     doodler.img = doodlerLeftImg;
   } else if ((e.code == "Space" || e.code == "Spacebar") && !gameOver) {
     doodler.img = doodlerUpImg;
@@ -212,7 +229,7 @@ function moveDoodler(e) {
     placePlatforms();
   }
 }
-function createPlatform(platformHeight, img, x, y, type) {
+function createPlatform(velX, platformHeight, img, x, y, type) {
   let platform = {
     img: img,
     x: x,
@@ -222,6 +239,7 @@ function createPlatform(platformHeight, img, x, y, type) {
     passed: false,
     touched: false,
     type: type,
+    velX: velX,
   };
   let overlapping = false;
   for (let j = 0; j < platformArray.length; j++) {
@@ -243,8 +261,16 @@ function createPlatform(platformHeight, img, x, y, type) {
 function createMovingPlatform() {
   let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
   let randomY = 0;
+  let velX = 2;
   // let img = movingPlatformImg;
-  createPlatform(platformHeight, movingPlatformImg, randomX, randomY, "moving");
+  createPlatform(
+    velX,
+    platformHeight,
+    movingPlatformImg,
+    randomX,
+    randomY,
+    "moving"
+  );
 }
 
 function createObstaclePlatform() {
@@ -252,8 +278,10 @@ function createObstaclePlatform() {
   let randomY = 0;
   let platformHeight = 45;
   console.log("inside create obs platform");
+  velX = 0;
   // let image = obstaclePlatformImg;
   createPlatform(
+    velX,
     platformHeight,
     obstaclePlatformImg,
     randomX,
@@ -265,6 +293,7 @@ function placePlatforms() {
   platformArray = [];
 
   createPlatform(
+    velX,
     platformHeight,
     platformImg,
     canvasWidth / 2,
@@ -275,7 +304,14 @@ function placePlatforms() {
     let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
     let randomY = canvasHeight - 75 * i - 150;
 
-    createPlatform(platformHeight, platformImg, randomX, randomY, "default");
+    createPlatform(
+      velX,
+      platformHeight,
+      platformImg,
+      randomX,
+      randomY,
+      "default"
+    );
   }
 }
 function newPlatform() {
@@ -284,12 +320,22 @@ function newPlatform() {
 
   let randomType = Math.random();
 
-  if (randomType < 0.2) {
+  if (score >= 500 && score % 150 == 0 && randomType < 0.5) {
     createMovingPlatform();
-  } else if (randomType < 0.3) {
+  } else if (
+    (score % 200 == 0 && randomType < 0.6) ||
+    (score >= 1500 && score % 200 == 0 && randomType < 0.6)
+  ) {
     createObstaclePlatform();
   } else {
-    createPlatform(platformHeight, platformImg, randomX, randomY, "default");
+    createPlatform(
+      velX,
+      platformHeight,
+      platformImg,
+      randomX,
+      randomY,
+      "default"
+    );
   }
 }
 

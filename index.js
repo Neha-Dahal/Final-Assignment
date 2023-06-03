@@ -18,7 +18,7 @@ let isShooting = false;
 //physics
 let velocityX = 0;
 let velocityY = 0; //doodler jump speed
-let initialVelocityY = -3; //starting velocity Y
+let initialVelocityY = -3.2; //starting velocity Y
 let gravity = 0.1;
 
 //platforms
@@ -35,8 +35,21 @@ let velX = 0;
 let maxScore = 0;
 let score = 0;
 
+//bullet
+let bulletSpeed = 5;
+let bulletSize = 10;
+let bullets = [];
+let bulletCreated = false;
+
 //gameover
 let gameOver = false;
+
+//sounds
+let jumpSound;
+let gunshotSound;
+let shootOnMonsterSound;
+let monsterCrashSound;
+let fallSound;
 
 let doodler = {
   img: null,
@@ -93,6 +106,21 @@ window.onload = function () {
   movingPlatformImg = new Image();
   movingPlatformImg.src = "./images/movingPlatform.png";
 
+  jumpSound = new Audio();
+  jumpSound.src = "./audio/jump.wav";
+
+  fallSound = new Audio();
+  fallSound.src = "./audio/fall.mp3";
+
+  gunshotSound = new Audio();
+  gunshotSound.src = "./audio/gunshot.wav";
+
+  shootOnMonsterSound = new Audio();
+  shootOnMonsterSound.src = "./audio/shootonmonster.mp3";
+
+  monsterCrashSound = new Audio();
+  monsterCrashSound.src = "./audio/monster-crash.mp3";
+
   velocityY = initialVelocityY;
   placePlatforms();
   requestAnimationFrame(update);
@@ -116,8 +144,9 @@ function update() {
     }
     if (detectCollision(doodler, platform)) {
       if (platform.type == "obstacle") {
-        console.log("collided with obs platform");
+        // console.log("collided with obs platform");
         gameOver = true;
+        monsterCrashSound.play();
       } else if (platform.type == "moving") {
         console.log("collided with moving");
       }
@@ -130,8 +159,10 @@ function update() {
       }
     }
 
-    if (detectCollision(doodler, platform) && velocityY >= 0) {
+    if (detectCollision(doodler, platform) && velocityY > 0) {
       velocityY = initialVelocityY;
+      jumpSound.play();
+      console.log("normal collision");
       // score += 10;
     }
     ctx.drawImage(
@@ -147,8 +178,12 @@ function update() {
     platformArray.shift();
     newPlatform();
   }
+  updateBullets();
+
   //doodler
+
   doodler.x += velocityX;
+
   if (doodler.x > canvasWidth) {
     doodler.x = 0;
   } else if (doodler.x + doodler.width < 0) {
@@ -167,6 +202,7 @@ function update() {
   }
   if (doodler.y > canvas.height) {
     gameOver = true;
+    fallSound.play();
   }
 
   ctx.drawImage(
@@ -176,13 +212,12 @@ function update() {
     doodler.width,
     doodler.height
   );
-
   drawScore();
-  if (score % 1000 == 0) {
+  if (score % 200 == 0) {
     let i = 0.001;
     initialVelocityY -= i;
     // console.log(initialVelocityY);
-    gravity += i * 0.5;
+    // gravity += i * 0.75;
     // console.log(gravity);
   }
   if (gameOver) {
@@ -207,6 +242,8 @@ function moveDoodler(e) {
   } else if ((e.code == "Space" || e.code == "Spacebar") && !gameOver) {
     doodler.img = doodlerUpImg;
     isShooting = true;
+    createBullet();
+    gunshotSound.play();
 
     setTimeout(() => {
       doodler.img = doodlerRightImg;
@@ -222,13 +259,101 @@ function moveDoodler(e) {
       height: doodlerHeight,
     };
     velocityX = 0;
+    initialVelocityY = -3.2;
     velocityY = initialVelocityY;
+    gravity = 0.1;
     score = 0;
     maxScore = 0;
     gameOver = false;
+    bullets = [];
     placePlatforms();
   }
 }
+function createBullet() {
+  // console.log("bullet created");
+  const bullet = {
+    x: doodler.x + doodler.width / 2 - bulletSize / 2,
+    y: doodler.y,
+  };
+  bullets.push(bullet);
+  bulletCreated = true;
+}
+// Update bullets
+// function updateBullets() {
+//   for (let i = 0; i < bullets.length; i++) {
+//     const bullet = bullets[i];
+//     bullet.y -= bulletSpeed;
+
+//     // Check collision with obstacle platforms
+//     for (let j = 0; j < platformArray.length; j++) {
+//       const platform = platformArray[j];
+//       if (
+//         platform.type === "obstacle" &&
+//         detectCollision(bullet, platform)
+//       ) {
+//         // console.log("collided bullet with obs");
+//         console.log(bullet.x,bullet.y)
+//         console.log(platform.x,platform.y)
+//         platform.img = platformImg;
+//         platform.type = "default";
+//         platform.height = platformHeight;
+//         platform.width = platformWidth;
+//         platform.y = platform.y + platformHeight / 2;
+
+//         bullets.splice(i, 1); // Remove bullet
+//         monsterCrashSound.play();
+//         break;
+//       }
+//     }
+
+//     // Remove bullets that go off-screen
+//     if (bullet.y < 0) {
+//       bullets.splice(i, 1);
+//       break;
+//     }
+
+//     ctx.fillStyle = "orange";
+//     ctx.fillRect(bullet.x, bullet.y, bulletSize, bulletSize);
+//   }
+// }
+function updateBullets() {
+  for (let i = 0; i < bullets.length; i++) {
+    const bullet = bullets[i];
+    bullet.y -= bulletSpeed;
+
+    // Check collision with obstacle platforms
+    for (let j = 0; j < platformArray.length; j++) {
+      const platform = platformArray[j];
+      if (
+        platform.type === "obstacle" &&
+        bulletCreated &&
+        detectBulletCollision(bullet, platform)
+      ) {
+        // console.log(bullet.x, bullet.y, "bullets");
+        // console.log(platform.x, platform.y, "platform");
+        platform.img = platformImg;
+        platform.type = "default";
+        platform.height = platformHeight;
+        platform.width = platformWidth;
+        platform.y = platform.y + platformHeight / 2;
+
+        bullets.splice(i, 1); // Remove bullet
+        monsterCrashSound.play();
+        break;
+      }
+    }
+
+    // Remove bullets that go off-screen
+    if (bullet.y < 0) {
+      bullets.splice(i, 1);
+      break;
+    }
+
+    ctx.fillStyle = "orange";
+    ctx.fillRect(bullet.x, bullet.y, bulletSize, bulletSize);
+  }
+}
+
 function createPlatform(velX, platformHeight, img, x, y, type) {
   let platform = {
     img: img,
@@ -320,13 +445,11 @@ function newPlatform() {
 
   let randomType = Math.random();
 
-  if (score >= 500 && score % 150 == 0 && randomType < 0.5) {
+  if (score >= 300 && score % 150 == 0 && randomType < 0.4) {
     createMovingPlatform();
-  } else if (
-    (score % 200 == 0 && randomType < 0.6) ||
-    (score >= 1500 && score % 200 == 0 && randomType < 0.6)
-  ) {
+  } else if (score >= 200 && score % 50 == 0 && randomType < 0.6) {
     createObstaclePlatform();
+    console.log("obs created");
   } else {
     createPlatform(
       velX,
@@ -338,15 +461,18 @@ function newPlatform() {
     );
   }
 }
-
 function detectCollision(a, b) {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
+  if (a.x > b.x + b.width || a.x + a.width < b.x) return false;
+  if (a.y + a.height < b.y || a.y + a.height > b.y + b.height) return false;
+  return true;
 }
+
+function detectBulletCollision(a, b) {
+  if (a.x > b.x + b.width || a.x + a.width < b.x) return false;
+  if (a.y + a.height < b.y || a.y + a.height > b.y + b.height) return false;
+  return true;
+}
+
 function drawScore() {
   let points = 10;
 

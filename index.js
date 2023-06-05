@@ -42,8 +42,8 @@ let bulletSize = 10;
 let bullets = [];
 let bulletCreated = false;
 
-//gameover
-let gameOver = false;
+//gamestate
+let gameState = "start";
 
 //sounds
 let jumpSound;
@@ -130,12 +130,28 @@ window.onload = function () {
 
 function update() {
   requestAnimationFrame(update);
-  if (gameOver) {
-    return;
-  }
+  // if (gameState == "end") {
+  //   return;
+  // }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  console.log(gap, platformsOnScreen);
+  // console.log(gap, platformsOnScreen);
+  console.log(gameState);
+  if (gameState == "start") {
+    drawStartScreen();
+  } else if (gameState == "playing") {
+    updateGame();
+  } else if (gameState == "end") {
+    drawEndScreen();
+  }
+}
+function drawStartScreen() {
+  // Draw the start screen elements
+  ctx.fillStyle = "black";
+  ctx.font = "24px Arial";
+  ctx.fillText("Game Start", canvasWidth / 2 - 60, canvasHeight / 2);
+}
 
+function updateGame() {
   // drawScore();
   //platform
   for (let i = 0; i < platformArray.length; i++) {
@@ -147,7 +163,7 @@ function update() {
     if (detectCollision(doodler, platform)) {
       if (platform.type == "obstacle") {
         // console.log("collided with obs platform");
-        gameOver = true;
+        gameState = "end";
         monsterCrashSound.play();
       }
     }
@@ -206,7 +222,7 @@ function update() {
     }
   }
   if (doodler.y > canvas.height) {
-    gameOver = true;
+    gameState = "end";
     fallSound.play();
   }
 
@@ -223,36 +239,52 @@ function update() {
     initialVelocityY -= i;
     // console.log(initialVelocityY);
   }
-  if (gameOver) {
-    ctx.fillText(
-      "Game Over: Press 'Space' to restart",
-      canvasWidth / 7,
-      (canvasHeight * 7) / 8
-    );
-    ctx.font = "10px Arial";
-  }
+}
+
+function drawEndScreen() {
+  ctx.fillStyle = "black";
+  ctx.font = "24px Arial";
+  ctx.fillText("Game Over", canvasWidth / 2 - 60, canvasHeight / 2);
+  ctx.font = "10px Arial";
+  ctx.fillText(
+    "Game Over: Press 'Space' to restart",
+    canvasWidth / 7,
+    (canvasHeight * 7) / 8
+  );
 }
 
 function moveDoodler(e) {
-  if (e.code == "ArrowRight" || e.code == "KeyD") {
-    //move right
-    velocityX = 2;
-    doodler.img = doodlerRightImg;
-  } else if (e.code == "ArrowLeft" || e.code == "KeyA") {
-    //move left
-    velocityX = -2;
-    doodler.img = doodlerLeftImg;
-  } else if ((e.code == "Space" || e.code == "Spacebar") && !gameOver) {
-    doodler.img = doodlerUpImg;
-    isShooting = true;
-    createBullet();
-    gunshotSound.play();
-    console.log(isShooting);
-    setTimeout(() => {
+  if (gameState == "start") {
+    if (e.code === "Space" || e.code === "Spacebar") {
+      gameState = "playing";
+    }
+  } else if (gameState == "playing") {
+    if (e.code == "ArrowRight" || e.code == "KeyD") {
+      //move right
+      velocityX = 2;
       doodler.img = doodlerRightImg;
-      // isShooting = false;
-    }, 300);
-  } else if ((e.code == "Space" || e.code == "Spacebar") && gameOver) {
+    } else if (e.code == "ArrowLeft" || e.code == "KeyA") {
+      //move left
+      velocityX = -2;
+      doodler.img = doodlerLeftImg;
+    } else if (
+      (e.code == "Space" || e.code == "Spacebar") &&
+      gameState != "end"
+    ) {
+      doodler.img = doodlerUpImg;
+      isShooting = true;
+      createBullet();
+      gunshotSound.play();
+      console.log(isShooting);
+      setTimeout(() => {
+        doodler.img = doodlerRightImg;
+        // isShooting = false;
+      }, 300);
+    }
+  } else if (
+    (e.code == "Space" || e.code == "Spacebar") &&
+    gameState == "end"
+  ) {
     //reset the game
     doodler = {
       img: doodlerRightImg,
@@ -267,13 +299,14 @@ function moveDoodler(e) {
     gravity = 0.1;
     score = 0;
     maxScore = 0;
-    gameOver = false;
     bullets = [];
     platformsOnScreen = 14;
     gap = 50;
     placePlatforms();
+    gameState = "playing";
   }
 }
+
 function createBullet() {
   // console.log("bullet created");
   const bullet = {
@@ -352,7 +385,6 @@ function createPlatform(velX, platformHeight, img, x, y, type) {
   }
 }
 
-
 function createMovingPlatform() {
   let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
   let randomY = 0;
@@ -369,7 +401,7 @@ function createMovingPlatform() {
 }
 
 function createObstaclePlatform() {
-  let randomX = Math.random() * canvasWidth * 3/4;
+  let randomX = (Math.random() * canvasWidth * 3) / 4;
   let randomY = 0;
   let platformHeight = 45;
   console.log("inside create obs platform");

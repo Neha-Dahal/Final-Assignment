@@ -1,35 +1,10 @@
-//canvas
-let canvas;
-let canvasWidth = 360;
-let canvasHeight = 576;
-let ctx;
-
-//doodler
-let doodlerWidth = 46;
-let doodlerHeight = 46;
-let doodlerX = canvasWidth / 2 - doodlerWidth / 2;
-let doodlerY = (canvasHeight * 7) / 8 - doodlerHeight;
-
-let doodlerRightImg;
-let doodlerLeftImg;
-let doodlerUpImg;
 let isShooting = false;
-
-//physics
-let velocityX = 0;
-let velocityY = 0; //doodler jump speed
-let initialVelocityY = -3; //starting velocity Y
-let gravity = 0.1;
-let gap = 50;
 
 //platforms
 let platformArray = [];
 let platformWidth = 60;
 let platformHeight = 18;
-let platformImg;
 let platformsOnScreen = 14;
-let movingPlatformImg;
-let obstaclePlatformImg;
 let velX = 0;
 
 //score
@@ -44,13 +19,6 @@ let bulletCreated = false;
 
 //gamestate
 let gameState = "start";
-
-//sounds
-let jumpSound;
-let gunshotSound;
-let shootOnMonsterSound;
-let monsterCrashSound;
-let fallSound;
 
 let doodler = {
   img: null,
@@ -72,61 +40,26 @@ let platform = {
   velX: velX,
 };
 
-window.onload = function () {
-  canvas = document.getElementById("canvas");
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-  ctx = canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
+const ctx = canvas.getContext("2d");
 
-  //loading the images
-
-  doodlerRightImg = new Image();
-  doodlerRightImg.src = "./images/doodler-right.png";
-  doodler.img = doodlerRightImg;
-  doodlerRightImg.onload = function () {
-    ctx.drawImage(
-      doodler.img,
-      doodler.x,
-      doodler.y,
-      doodler.width,
-      doodler.height
-    );
-  };
-  doodlerLeftImg = new Image();
-  doodlerLeftImg.src = "./images/doodler-left.png";
-
-  doodlerUpImg = new Image();
-  doodlerUpImg.src = "./images/doodler-up.png";
-
-  platformImg = new Image();
-  platformImg.src = "./images/platform.png";
-
-  obstaclePlatformImg = new Image();
-  obstaclePlatformImg.src = "./images/obstaclePlatform.png";
-
-  movingPlatformImg = new Image();
-  movingPlatformImg.src = "./images/movingPlatform.png";
-
-  jumpSound = new Audio();
-  jumpSound.src = "./audio/jump.wav";
-
-  fallSound = new Audio();
-  fallSound.src = "./audio/fall.mp3";
-
-  gunshotSound = new Audio();
-  gunshotSound.src = "./audio/gunshot.wav";
-
-  shootOnMonsterSound = new Audio();
-  shootOnMonsterSound.src = "./audio/shootonmonster.mp3";
-
-  monsterCrashSound = new Audio();
-  monsterCrashSound.src = "./audio/monster-crash.mp3";
-
-  velocityY = initialVelocityY;
-  placePlatforms();
-  requestAnimationFrame(update);
-  document.addEventListener("keydown", moveDoodler);
+//loading the images
+doodler.img = doodlerRightImg;
+doodlerRightImg.onload = function () {
+  ctx.drawImage(
+    doodler.img,
+    doodler.x,
+    doodler.y,
+    doodler.width,
+    doodler.height
+  );
 };
+
+velocityY = initialVelocityY;
+placePlatforms();
+document.addEventListener("keydown", moveDoodler);
 
 function update() {
   requestAnimationFrame(update);
@@ -237,7 +170,6 @@ function updateGame() {
   if (score % 200 == 0) {
     let i = 0.001;
     initialVelocityY -= i;
-    // console.log(initialVelocityY);
   }
 }
 
@@ -312,6 +244,8 @@ function createBullet() {
   const bullet = {
     x: doodler.x + doodler.width / 2 - bulletSize / 2,
     y: doodler.y,
+    width: bulletSize,
+    height: bulletSize,
   };
   bullets.push(bullet);
   bulletCreated = true;
@@ -324,7 +258,7 @@ function updateBullets() {
 
     ctx.fillStyle = "orange";
     console.log("bullet created");
-    ctx.fillRect(bullet.x, bullet.y, bulletSize, bulletSize);
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     // gunshotSound.play();
 
     // Check collision with obstacle platforms
@@ -472,9 +406,9 @@ function detectCollision(a, b) {
 function detectBulletCollision(a, b) {
   return (
     a.x < b.x + b.width &&
-    a.x + bulletSize > b.x &&
+    a.x + a.width > b.x &&
     a.y < b.y + b.height &&
-    a.y + bulletSize > b.y
+    a.y + a.height > b.y
   );
 }
 
@@ -502,3 +436,5 @@ function drawScore() {
   ctx.font = "16px Arial";
   ctx.fillText("Score: " + score, 10, 30);
 }
+
+update();

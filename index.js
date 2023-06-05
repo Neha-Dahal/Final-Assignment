@@ -18,15 +18,16 @@ let isShooting = false;
 //physics
 let velocityX = 0;
 let velocityY = 0; //doodler jump speed
-let initialVelocityY = -3.2; //starting velocity Y
+let initialVelocityY = -3; //starting velocity Y
 let gravity = 0.1;
+let gap = 50;
 
 //platforms
 let platformArray = [];
 let platformWidth = 60;
 let platformHeight = 18;
 let platformImg;
-let platformsOnScreen = 10;
+let platformsOnScreen = 14;
 let movingPlatformImg;
 let obstaclePlatformImg;
 let velX = 0;
@@ -133,6 +134,7 @@ function update() {
     return;
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  console.log(gap, platformsOnScreen);
 
   // drawScore();
   //platform
@@ -176,6 +178,11 @@ function update() {
     platformArray.shift();
     newPlatform();
   }
+  if (score >= 500) {
+    gap = 75;
+    platformsOnScreen = 8;
+  }
+
   updateBullets();
 
   //doodler
@@ -215,8 +222,6 @@ function update() {
     let i = 0.001;
     initialVelocityY -= i;
     // console.log(initialVelocityY);
-    // gravity += i * 0.75;
-    // console.log(gravity);
   }
   if (gameOver) {
     ctx.fillText(
@@ -241,7 +246,7 @@ function moveDoodler(e) {
     doodler.img = doodlerUpImg;
     isShooting = true;
     createBullet();
-    // gunshotSound.play();
+    gunshotSound.play();
     console.log(isShooting);
     setTimeout(() => {
       doodler.img = doodlerRightImg;
@@ -257,13 +262,15 @@ function moveDoodler(e) {
       height: doodlerHeight,
     };
     velocityX = 0;
-    initialVelocityY = -3.2;
+    initialVelocityY = -3;
     velocityY = initialVelocityY;
     gravity = 0.1;
     score = 0;
     maxScore = 0;
     gameOver = false;
     bullets = [];
+    platformsOnScreen = 14;
+    gap = 50;
     placePlatforms();
   }
 }
@@ -285,7 +292,7 @@ function updateBullets() {
     ctx.fillStyle = "orange";
     console.log("bullet created");
     ctx.fillRect(bullet.x, bullet.y, bulletSize, bulletSize);
-    gunshotSound.play();
+    // gunshotSound.play();
 
     // Check collision with obstacle platforms
     for (let j = 0; j < platformArray.length; j++) {
@@ -344,7 +351,7 @@ function createPlatform(velX, platformHeight, img, x, y, type) {
     platformArray.push(platform);
   }
 }
-// platformArray.push(platform);
+
 
 function createMovingPlatform() {
   let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
@@ -362,7 +369,7 @@ function createMovingPlatform() {
 }
 
 function createObstaclePlatform() {
-  let randomX = Math.random() * canvasWidth;
+  let randomX = Math.random() * canvasWidth * 3/4;
   let randomY = 0;
   let platformHeight = 45;
   console.log("inside create obs platform");
@@ -388,9 +395,10 @@ function placePlatforms() {
     canvasHeight - 50,
     "default"
   );
+
   for (let i = 0; i < platformsOnScreen - 1; i++) {
     let randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
-    let randomY = canvasHeight - 75 * i - 150;
+    let randomY = canvasHeight - gap * i - 150;
 
     createPlatform(
       velX,

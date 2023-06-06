@@ -15,3 +15,9 @@ obstaclePlatformImg.src = "../images/obstaclePlatform.png";
 
 const movingPlatformImg = new Image();
 movingPlatformImg.src = "../images/movingPlatform.png";
+
+const startBgImg = new Image();
+startBgImg.src = "../images/startBg.png";
+
+const startBgGif = new Image();
+startBgGif.src = "../images/startGif.gif";

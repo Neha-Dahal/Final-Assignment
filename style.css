@@ -10,6 +10,11 @@ body {
 
 canvas {
   background: url(./images/doodlejumpbg.png);
-  /* background-color: green; */
   margin: 40px auto;
 }
+
+/* .play-btn {
+  width: 222px;
+  height: auto;
+  background: url(./images/play-btn.png);
+} */

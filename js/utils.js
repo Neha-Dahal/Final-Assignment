@@ -16,9 +16,15 @@ function detectTopBottomCollision(a, b) {
 }
 
 function drawStartScreen() {
-  ctx.fillStyle = "black";
-  ctx.font = "24px Arial";
-  ctx.fillText("Game Start", canvasWidth / 2 - 60, canvasHeight / 2);
+  console.log("inside start screen");
+  ctx.drawImage(startBgImg, 0, 0, canvas.width, canvas.height);
+
+  ctx.drawImage(startBgGif, 40, 360, 91, 100);
+  // ctx.fillStyle = "black";
+  // ctx.font = "24px Arial";
+  // ctx.fillText("Game Start", canvasWidth / 2 - 60, canvasHeight / 2);
+
+  const playBtn = document.querySelector(".play-btn");
 }
 
 function drawEndScreen() {

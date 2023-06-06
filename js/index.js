@@ -41,6 +41,7 @@ let platform = {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
@@ -155,13 +156,16 @@ function moveDoodler(e) {
     if (e.code === "Space" || e.code === "Spacebar") {
       gameState = "playing";
     }
-  } else if (gameState == "playing") {
+    return;
+  }
+
+  if (gameState == "playing") {
     if (e.code == "ArrowRight" || e.code == "KeyD") {
-      //move right
+      // move right
       doodlerVelocityX = 2;
       doodler.img = doodlerRightImg;
     } else if (e.code == "ArrowLeft" || e.code == "KeyA") {
-      //move left
+      // move left
       doodlerVelocityX = -2;
       doodler.img = doodlerLeftImg;
     } else if (
@@ -176,29 +180,31 @@ function moveDoodler(e) {
         doodler.img = doodlerRightImg;
       }, 300);
     }
-  } else if (
-    (e.code == "Space" || e.code == "Spacebar") &&
-    gameState == "end"
-  ) {
-    //reset the game
-    doodler = {
-      img: doodlerRightImg,
-      x: doodlerX,
-      y: doodlerY,
-      width: doodlerWidth,
-      height: doodlerHeight,
-    };
-    doodlerVelocityX = 0;
-    initialVelocityY = -3;
-    velocityY = initialVelocityY;
-    gravity = 0.1;
-    score = 0;
-    maxScore = 0;
-    bullets = [];
-    platformsOnScreen = 14;
-    gap = 50;
-    placePlatforms();
-    gameState = "playing";
+    return;
+  }
+
+  if (gameState === "end") {
+    if (e.code == "Space" || e.code == "Spacebar") {
+      // reset the game
+      doodler = {
+        img: doodlerRightImg,
+        x: doodlerX,
+        y: doodlerY,
+        width: doodlerWidth,
+        height: doodlerHeight,
+      };
+      doodlerVelocityX = 0;
+      initialVelocityY = -3;
+      velocityY = initialVelocityY;
+      gravity = 0.1;
+      score = 0;
+      maxScore = 0;
+      bullets = [];
+      platformsOnScreen = 14;
+      gap = 50;
+      placePlatforms();
+      gameState = "playing";
+    }
   }
 }
 

@@ -17,7 +17,7 @@ const movingPlatformImg = new Image();
 movingPlatformImg.src = "../images/movingPlatform.png";
 
 const startBgImg = new Image();
-startBgImg.src = "../images/startBg.png";
+startBgImg.src = "../images/startbg.png";
 
 const startBgGif = new Image();
 startBgGif.src = "../images/startGif.gif";

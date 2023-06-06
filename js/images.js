@@ -20,4 +20,4 @@ const startBgImg = new Image();
 startBgImg.src = "./images/startbg.png";
 
 const startBgGif = new Image();
-startBgGif.src = "./images/startGif.gif";
+startBgGif.src = "./images/startGIF.gif";

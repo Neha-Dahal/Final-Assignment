@@ -17,7 +17,7 @@ function detectTopBottomCollision(a, b) {
 
 function drawStartScreen() {
   console.log("inside start screen");
-  ctx.drawImage(startBgImg, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(startBgImg, 0, 0, canvasWidth, canvasHeight);
 
   ctx.drawImage(startBgGif, 40, 360, 91, 100);
   // ctx.fillStyle = "black";

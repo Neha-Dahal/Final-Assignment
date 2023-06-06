@@ -19,8 +19,6 @@ movingPlatformImg.src = "./images/movingPlatform.png";
 const startBgImg = new Image();
 startBgImg.src = "./images/startbg.png";
 
-const startBgGif = new Image();
-startBgGif.src = "./images/startGIF.gif";
+// const startBgGif = new Image();
+// startBgGif.src = "./images/startGIF.gif";
 
-const playBtnImg = new Image();
-playBtnImg.src = "./images/play-btn.png";

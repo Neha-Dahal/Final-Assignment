@@ -41,6 +41,9 @@ let platform = {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+const playButton = document.querySelector(".play-btn");
+const doodlerGif = document.querySelector(".doodler-gif");
+
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
@@ -55,10 +58,14 @@ function animate() {
   }
 
   if (gameState === "playing") {
+    playButton.style.display = "none";
+    doodlerGif.style.display = "none";
     return updateGame();
   }
 
   if (gameState === "end") {
+    playButton.style.display = "none";
+    doodlerGif.style.display = "none";
     return drawEndScreen();
   }
 }
@@ -150,14 +157,14 @@ function updateGame() {
   score % 200 == 0 ? (initialVelocityY -= 0.001) : null;
 }
 
-function moveDoodler(e) {
+function handlePlayClick() {
   if (gameState === "start") {
-    if (e.code === "Space" || e.code === "Spacebar") {
-      gameState = "playing";
-    }
+    gameState = "playing";
     return;
   }
+}
 
+function moveDoodler(e) {
   if (gameState == "playing") {
     if (e.code == "ArrowRight" || e.code == "KeyD") {
       // move right
@@ -392,5 +399,8 @@ function drawScore() {
 }
 
 document.addEventListener("keydown", moveDoodler);
+
+playButton.addEventListener("click", handlePlayClick);
+
 placePlatforms();
 animate();

@@ -41,7 +41,6 @@ let platform = {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
@@ -152,7 +151,7 @@ function updateGame() {
 }
 
 function moveDoodler(e) {
-  if (gameState == "start") {
+  if (gameState === "start") {
     if (e.code === "Space" || e.code === "Spacebar") {
       gameState = "playing";
     }

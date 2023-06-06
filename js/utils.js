@@ -20,11 +20,7 @@ function drawStartScreen() {
   ctx.drawImage(startBgImg, 0, 0, canvasWidth, canvasHeight);
 
   ctx.drawImage(startBgGif, 40, 360, 91, 100);
-  // ctx.fillStyle = "black";
-  // ctx.font = "24px Arial";
-  // ctx.fillText("Game Start", canvasWidth / 2 - 60, canvasHeight / 2);
-
-  const playBtn = document.querySelector(".play-btn");
+  ctx.drawImage(playBtnImg, 120, 220, 110, 40);
 }
 
 function drawEndScreen() {

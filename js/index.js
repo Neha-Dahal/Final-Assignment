@@ -10,6 +10,7 @@ let platformVelX = 0;
 
 let maxScore = 0;
 let score = 0;
+let highScore = localStorage.getItem("highScore") || 0;
 
 let bulletSpeed = 5;
 let bulletSize = 10;
@@ -42,7 +43,11 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const playButton = document.querySelector(".play-btn");
-const doodlerGif = document.querySelector(".doodler-gif");
+const playAgainButton = document.querySelector(".play-again-btn");
+
+const doodlerStartGif = document.querySelector(".doodler-start-gif");
+
+const doodlerEndGif = document.querySelector(".doodler-end-gif");
 
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
@@ -52,20 +57,29 @@ let velocityY = initialVelocityY;
 function animate() {
   requestAnimationFrame(animate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  console.log(initialVelocityY, gravity);
   if (gameState === "start") {
+    playAgainButton.style.display = "none";
+    doodlerEndGif.style.display = "none";
     return drawStartScreen();
   }
 
   if (gameState === "playing") {
     playButton.style.display = "none";
-    doodlerGif.style.display = "none";
+    doodlerStartGif.style.display = "none";
+
+    playAgainButton.style.display = "none";
+    doodlerEndGif.style.display = "none";
+
     return updateGame();
   }
 
   if (gameState === "end") {
     playButton.style.display = "none";
-    doodlerGif.style.display = "none";
+    doodlerStartGif.style.display = "none";
+
+    playAgainButton.style.display = "block";
+    doodlerEndGif.style.display = "block";
     return drawEndScreen();
   }
 }
@@ -78,7 +92,7 @@ function updateGame() {
       platform.y -= initialVelocityY;
     }
 
-    if (detectTopBottomCollision(doodler, platform)) {
+    if (detectRectangleCollision(doodler, platform)) {
       if (platform.type == "obstacle") {
         gameState = "end";
         monsterCrashSound.play();
@@ -164,6 +178,30 @@ function handlePlayClick() {
   }
 }
 
+function handleRestart() {
+  if (gameState === "end") {
+    // reset the game
+    doodler = {
+      img: doodlerRightImg,
+      x: doodlerX,
+      y: doodlerY,
+      width: doodlerWidth,
+      height: doodlerHeight,
+    };
+    doodlerVelocityX = 0;
+    initialVelocityY = -3;
+    velocityY = initialVelocityY;
+    gravity = 0.1;
+    score = 0;
+    maxScore = 0;
+    bullets = [];
+    platformsOnScreen = 14;
+    gap = 50;
+    placePlatforms();
+    gameState = "playing";
+  }
+}
+
 function moveDoodler(e) {
   if (gameState == "playing") {
     if (e.code == "ArrowRight" || e.code == "KeyD") {
@@ -187,30 +225,6 @@ function moveDoodler(e) {
       }, 300);
     }
     return;
-  }
-
-  if (gameState === "end") {
-    if (e.code == "Space" || e.code == "Spacebar") {
-      // reset the game
-      doodler = {
-        img: doodlerRightImg,
-        x: doodlerX,
-        y: doodlerY,
-        width: doodlerWidth,
-        height: doodlerHeight,
-      };
-      doodlerVelocityX = 0;
-      initialVelocityY = -3;
-      velocityY = initialVelocityY;
-      gravity = 0.1;
-      score = 0;
-      maxScore = 0;
-      bullets = [];
-      platformsOnScreen = 14;
-      gap = 50;
-      placePlatforms();
-      gameState = "playing";
-    }
   }
 }
 
@@ -241,7 +255,7 @@ function updateBullets() {
         platform.type === "obstacle" &&
         bulletCreated &&
         isShooting &&
-        detectBulletCollision(bullet, platform)
+        detectRectangleCollision(bullet, platform)
       ) {
         platform.img = platformImg;
         platform.type = "default";
@@ -355,11 +369,11 @@ function createNewPlatform() {
   const randomY = -platformHeight;
   const randomType = Math.random();
 
-  if (score >= 300 && score % 150 == 0 && randomType < 0.5) {
+  if (score >= 100 && score % 100 == 0 && randomType < 0.6) {
     return createMovingPlatform();
   }
 
-  if (score >= 250 && score % 250 == 0 && randomType < 0.6) {
+  if (score >= 80 && score % 80 == 0 && randomType < 0.7) {
     return createObstaclePlatform();
   }
 
@@ -391,6 +405,10 @@ function drawScore() {
       score += points;
       platform.passed = true;
     }
+    if (score > highScore) {
+      highScore = score; // Update the high score
+      localStorage.setItem("highScore", highScore); // Store the high score in local storage
+    }
   }
 
   ctx.fillStyle = "black";
@@ -401,6 +419,7 @@ function drawScore() {
 document.addEventListener("keydown", moveDoodler);
 
 playButton.addEventListener("click", handlePlayClick);
+playAgainButton.addEventListener("click", handleRestart);
 
 placePlatforms();
 animate();

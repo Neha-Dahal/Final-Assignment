@@ -7,3 +7,7 @@ const gunshotSound = new Audio("./audio/gunshot.wav");
 const shootOnMonsterSound = new Audio("./audio/shootonmonster.mp3");
 
 const monsterCrashSound = new Audio("./audio/monster-crash.mp3");
+
+const gameStartSound = new Audio("./audio/game-start.wav");
+
+

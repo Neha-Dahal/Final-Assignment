@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "DoodleJump";
+  font-style: normal;
+  font-weight: normal;
+  src: local("DoodleJump"), url(".woff") format("woff");
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -10,6 +17,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  color: black;
 }
 
 .game-container {
@@ -32,10 +40,20 @@ canvas {
   cursor: pointer;
 }
 
-.doodler-gif {
+.doodler-start-gif,
+.doodler-end-gif {
   width: 90px;
   height: 100px;
   position: absolute;
   top: 60%;
   left: 10%;
+}
+
+.play-again-btn {
+  width: 140px;
+  height: 50px;
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  cursor: pointer;
 }

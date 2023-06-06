@@ -1,4 +1,4 @@
-function detectBulletCollision(a, b) {
+function detectRectangleCollision(a, b) {
   return (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
@@ -16,17 +16,14 @@ function detectTopBottomCollision(a, b) {
 }
 
 function drawStartScreen() {
+  gameStartSound.play();
   ctx.drawImage(startBgImg, 0, 0, canvasWidth, canvasHeight);
 }
 
 function drawEndScreen() {
-  ctx.fillStyle = "black";
-  ctx.font = "24px Arial";
-  ctx.fillText("Game Over", canvasWidth / 2 - 60, canvasHeight / 2);
-  ctx.font = "10px Arial";
-  ctx.fillText(
-    "Game Over: Press 'Space' to restart",
-    canvasWidth / 7,
-    (canvasHeight * 7) / 8
-  );
+  ctx.drawImage(endBgImg, 0, 0, canvasWidth, canvasHeight);
+
+  ctx.font = "bold 18pt DoodleJump";
+  ctx.fillText(`your score : ${score}`, 100, 190);
+  ctx.fillText(`your high score : ${highScore}`, 100, 230);
 }

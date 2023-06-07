@@ -21,7 +21,3 @@ startBgImg.src = "./images/startbg.png";
 
 const endBgImg = new Image();
 endBgImg.src = "./images/endbg.png";
-
-// const startBgGif = new Image();
-// startBgGif.src = "./images/startGIF.gif";
-

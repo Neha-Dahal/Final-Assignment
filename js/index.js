@@ -57,7 +57,6 @@ let velocityY = initialVelocityY;
 function animate() {
   requestAnimationFrame(animate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  console.log(initialVelocityY, gravity);
   if (gameState === "start") {
     playAgainButton.style.display = "none";
     doodlerEndGif.style.display = "none";
@@ -94,8 +93,8 @@ function updateGame() {
 
     if (detectRectangleCollision(doodler, platform)) {
       if (platform.type == "obstacle") {
-        gameState = "end";
         monsterCrashSound.play();
+        gameState = "end";
       }
     }
 

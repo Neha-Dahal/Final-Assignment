@@ -16,7 +16,6 @@ function detectTopBottomCollision(a, b) {
 }
 
 function drawStartScreen() {
-  gameStartSound.play();
   ctx.drawImage(startBgImg, 0, 0, canvasWidth, canvasHeight);
 }
 

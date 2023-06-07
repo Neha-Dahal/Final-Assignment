@@ -1,6 +1,6 @@
 // canvas
-let canvasWidth = 360;
-let canvasHeight = 576;
+const canvasWidth = 360;
+const canvasHeight = 576;
 
 // doodler
 let doodlerWidth = 46;

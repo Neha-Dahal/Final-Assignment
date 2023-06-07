@@ -30,7 +30,7 @@ function createAndDrawPlatform(platformVelX, platformHeight, img, x, y, type) {
 
 function createMovingPlatform() {
   const randomX = Math.floor((Math.random() * canvasWidth * 3) / 4);
-  const randomY = 0;
+  const randomY = -platformHeight;
   const platformVelX = 2;
   createAndDrawPlatform(
     platformVelX,
@@ -44,7 +44,7 @@ function createMovingPlatform() {
 
 function createObstaclePlatform() {
   const randomX = (Math.random() * canvasWidth * 3) / 4;
-  const randomY = 0;
+  const randomY = -platformHeight;
   const obstaclePlatformHeight = 45;
   platformVelX = 0;
   // let image = obstaclePlatformImg;
